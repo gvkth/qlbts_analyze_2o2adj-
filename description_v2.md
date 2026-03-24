@@ -63,18 +63,18 @@ graph TD
 ```mermaid
 gantt
     title Case 1 - PLHD Hoạt động bình thường (TT cuối trong tháng T)
-    dateFormat X
-    axisFormat %d
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
     
     section Tháng T-1
-    Hoạt động bình thường    :done, prev-month, 1, 30d
+    Hoạt động bình thường    :done, prev-month, 2024-01-01, 2024-01-31
     
     section Tháng T (Quan Tâm)
-    Ngày TT cuối            :milestone, payment-date, 35, 0d
-    Chi phí được tính       :active, cost-period, 35, 27d
+    Ngày TT cuối            :milestone, payment-date, 2024-02-05, 0d
+    Chi phí được tính       :active, cost-period, 2024-02-05, 2024-02-29
     
     section Tháng T+1
-    Tiếp tục hoạt động      :future, next-month, 63, 30d
+    Tiếp tục hoạt động      :future, next-month, 2024-03-01, 2024-03-31
 ```
 
 **Điều kiện:**
@@ -93,19 +93,19 @@ gantt
 ```mermaid
 gantt
     title Case 2 - PLHD Hoạt động bình thường (TT cuối trước tháng T)
-    dateFormat X
-    axisFormat %d
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
     
     section Tháng T-1
-    Hoạt động bình thường    :done, prev-month, 1, 25d
-    Ngày TT cuối            :milestone, payment-date, 25, 0d
-    Chưa thanh toán         :active, unpaid, 25, 6d
+    Hoạt động bình thường    :done, prev-month, 2024-01-01, 2024-01-25
+    Ngày TT cuối            :milestone, payment-date, 2024-01-25, 0d
+    Chưa thanh toán         :active, unpaid, 2024-01-25, 2024-01-31
     
     section Tháng T (Quan Tâm)
-    Chi phí cả tháng        :active, cost-period, 32, 30d
+    Chi phí cả tháng        :active, cost-period, 2024-02-01, 2024-02-29
     
     section Tháng T+1
-    Tiếp tục hoạt động      :future, next-month, 63, 30d
+    Tiếp tục hoạt động      :future, next-month, 2024-03-01, 2024-03-31
 ```
 
 **Điều kiện:**
@@ -124,21 +124,21 @@ gantt
 ```mermaid
 gantt
     title Case 3 - PLHD Hết hạn trong tháng T (TT cuối trước tháng T)
-    dateFormat X
-    axisFormat %d
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
     
     section Tháng T-1
-    Hoạt động bình thường    :done, prev-month, 1, 25d
-    Ngày TT cuối            :milestone, payment-date, 25, 0d
-    Chưa thanh toán         :active, unpaid, 25, 6d
+    Hoạt động bình thường    :done, prev-month, 2024-01-01, 2024-01-25
+    Ngày TT cuối            :milestone, payment-date, 2024-01-25, 0d
+    Chưa thanh toán         :active, unpaid, 2024-01-25, 2024-01-31
     
     section Tháng T (Quan Tâm)
-    Chi phí đến hết hạn     :active, cost-period, 32, 18d
-    Ngày hết hạn            :milestone, expire-date, 50, 0d
-    Hết hạn                 :done, expired, 50, 12d
+    Chi phí đến hết hạn     :active, cost-period, 2024-02-01, 2024-02-18
+    Ngày hết hạn            :milestone, expire-date, 2024-02-18, 0d
+    Hết hạn                 :done, expired, 2024-02-18, 2024-02-29
     
     section Tháng T+1
-    Không hoạt động         :expired-inactive, 63, 30d
+    Không hoạt động         :expired-inactive, 2024-03-01, 2024-03-31
 ```
 
 **Điều kiện:**
@@ -157,20 +157,20 @@ gantt
 ```mermaid
 gantt
     title Case 4 - PLHD Hết hạn trong tháng T (TT cuối trong tháng T)
-    dateFormat X
-    axisFormat %d
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
     
     section Tháng T-1
-    Hoạt động bình thường    :done, prev-month, 1, 30d
+    Hoạt động bình thường    :done, prev-month, 2024-01-01, 2024-01-31
     
     section Tháng T (Quan Tâm)
-    Ngày TT cuối            :milestone, payment-date, 35, 0d
-    Chi phí đến hết hạn     :active, cost-period, 35, 15d
-    Ngày hết hạn            :milestone, expire-date, 50, 0d
-    Hết hạn                 :done, expired, 50, 12d
+    Ngày TT cuối            :milestone, payment-date, 2024-02-05, 0d
+    Chi phí đến hết hạn     :active, cost-period, 2024-02-05, 2024-02-18
+    Ngày hết hạn            :milestone, expire-date, 2024-02-18, 0d
+    Hết hạn                 :done, expired, 2024-02-18, 2024-02-29
     
     section Tháng T+1
-    Không hoạt động         :expired-inactive, 63, 30d
+    Không hoạt động         :expired-inactive, 2024-03-01, 2024-03-31
 ```
 
 **Điều kiện:**
@@ -189,19 +189,19 @@ gantt
 ```mermaid
 gantt
     title Case 5 - PLHD Quá hạn chưa thanh toán
-    dateFormat X
-    axisFormat %d
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
     
     section Tháng T-1
-    Hoạt động               :done, prev-month, 1, 20d
-    Ngày TT cuối (F_Calc)   :milestone, payment-calc, 20, 0d
-    Quá hạn                 :crit, overdue, 20, 11d
+    Hoạt động               :done, prev-month, 2024-01-01, 2024-01-20
+    Ngày TT cuối (F_Calc)   :milestone, payment-calc, 2024-01-20, 0d
+    Quá hạn                 :crit, overdue, 2024-01-20, 2024-01-31
     
     section Tháng T (Quan Tâm)
-    Chi phí nợ quá hạn      :crit, overdue-cost, 32, 30d
+    Chi phí nợ quá hạn      :crit, overdue-cost, 2024-02-01, 2024-02-29
     
     section Tháng T+1
-    Vẫn nợ                  :crit, still-overdue, 63, 30d
+    Vẫn nợ                  :crit, still-overdue, 2024-03-01, 2024-03-31
 ```
 
 **Điều kiện:**
@@ -221,21 +221,21 @@ gantt
 ```mermaid
 gantt
     title Case 6 - PLHD Bị hủy trong tháng T (TT cuối trước tháng T)
-    dateFormat X
-    axisFormat %d
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
     
     section Tháng T-1
-    Hoạt động bình thường    :done, prev-month, 1, 25d
-    Ngày TT cuối            :milestone, payment-date, 25, 0d
-    Chưa thanh toán         :active, unpaid, 25, 6d
+    Hoạt động bình thường    :done, prev-month, 2024-01-01, 2024-01-25
+    Ngày TT cuối            :milestone, payment-date, 2024-01-25, 0d
+    Chưa thanh toán         :active, unpaid, 2024-01-25, 2024-01-31
     
     section Tháng T (Quan Tâm)
-    Chi phí đến ngày hủy    :active, cost-period, 32, 18d
-    Ngày hủy                :milestone, cancel-date, 50, 0d
-    Đã hủy                  :done, cancelled, 50, 12d
+    Chi phí đến ngày hủy    :active, cost-period, 2024-02-01, 2024-02-18
+    Ngày hủy                :milestone, cancel-date, 2024-02-18, 0d
+    Đã hủy                  :done, cancelled, 2024-02-18, 2024-02-29
     
     section Tháng T+1
-    Không hoạt động         :cancelled-inactive, 63, 30d
+    Không hoạt động         :cancelled-inactive, 2024-03-01, 2024-03-31
 ```
 
 **Điều kiện:**
@@ -254,20 +254,20 @@ gantt
 ```mermaid
 gantt
     title Case 7 - PLHD Bị hủy trong tháng T (TT cuối trong tháng T)
-    dateFormat X
-    axisFormat %d
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
     
     section Tháng T-1
-    Hoạt động bình thường    :done, prev-month, 1, 30d
+    Hoạt động bình thường    :done, prev-month, 2024-01-01, 2024-01-31
     
     section Tháng T (Quan Tâm)
-    Ngày TT cuối            :milestone, payment-date, 35, 0d
-    Chi phí đến ngày hủy    :active, cost-period, 35, 15d
-    Ngày hủy                :milestone, cancel-date, 50, 0d
-    Đã hủy                  :done, cancelled, 50, 12d
+    Ngày TT cuối            :milestone, payment-date, 2024-02-05, 0d
+    Chi phí đến ngày hủy    :active, cost-period, 2024-02-05, 2024-02-18
+    Ngày hủy                :milestone, cancel-date, 2024-02-18, 0d
+    Đã hủy                  :done, cancelled, 2024-02-18, 2024-02-29
     
     section Tháng T+1
-    Không hoạt động         :cancelled-inactive, 63, 30d
+    Không hoạt động         :cancelled-inactive, 2024-03-01, 2024-03-31
 ```
 
 **Điều kiện:**
@@ -286,20 +286,20 @@ gantt
 ```mermaid
 gantt
     title Case 8 - PLHD Bị hủy sau tháng T
-    dateFormat X
-    axisFormat %d
+    dateFormat YYYY-MM-DD
+    axisFormat %m-%d
     
     section Tháng T-1
-    Hoạt động bình thường    :done, prev-month, 1, 25d
-    Ngày TT cuối            :milestone, payment-date, 25, 0d
-    Chưa thanh toán         :active, unpaid, 25, 6d
+    Hoạt động bình thường    :done, prev-month, 2024-01-01, 2024-01-25
+    Ngày TT cuối            :milestone, payment-date, 2024-01-25, 0d
+    Chưa thanh toán         :active, unpaid, 2024-01-25, 2024-01-31
     
     section Tháng T (Quan Tâm)
-    Chi phí cả tháng        :active, cost-period, 32, 30d
+    Chi phí cả tháng        :active, cost-period, 2024-02-01, 2024-02-29
     
     section Tháng T+1
-    Ngày hủy                :milestone, cancel-date, 65, 0d
-    Đã hủy                  :done, cancelled, 65, 28d
+    Ngày hủy                :milestone, cancel-date, 2024-03-05, 0d
+    Đã hủy                  :done, cancelled, 2024-03-05, 2024-03-31
 ```
 
 **Điều kiện:**
