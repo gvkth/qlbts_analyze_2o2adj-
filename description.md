@@ -71,65 +71,53 @@ graph TD
     style M fill:#f3e5f5
 ```
 
-## Biểu Đồ Timeline - Các Trường Hợp PLHD_MatBang (3 Tháng)
+## Biểu Đồ Timeline - Các Trường Hợp PLHD_MatBang
 
-```mermaid
-gantt
-    title Timeline Chi Phí Trích Trước - Tháng T-1, T (Quan Tâm), T+1
-    dateFormat X
-    axisFormat %d
-    
-    section Khung Thời Gian
-    Tháng T-1               :milestone, month-prev, 15, 0d
-    Tháng T (Quan Tâm)      :milestone, month-target, 46, 0d
-    Tháng T+1               :milestone, month-next, 77, 0d
-    
-    section Ranh Giới Tháng
-    Cuối T-1 / Đầu T        :milestone, boundary1, 31, 0d
-    Cuối T / Đầu T+1        :milestone, boundary2, 62, 0d
-    
-    section Case 1 - PLHD Bình Thường
-    Hoạt động T-1           :done, case1-prev, 1, 30d
-    Ngày TT cuối (T-1)      :milestone, case1-payment, 25, 0d
-    Chi phí được tính T     :active, case1-cost, 32, 30d
-    Tiếp tục T+1            :case1-next, 63, 30d
-    
-    section Case 2 - PLHD Quá Hạn
-    Quá hạn từ T-1          :done, case2-overdue, 1, 30d
-    Ngày TT cuối (F_Calc)   :milestone, case2-calc, 20, 0d
-    Chi phí nợ quá hạn T    :crit, case2-cost, 32, 30d
-    Vẫn nợ sang T+1         :crit, case2-next, 63, 30d
-    
-    section Case 3A - PLHD Hủy Giữa T
-    Hoạt động bình thường T-1 :done, case3a-prev, 1, 30d
-    Ngày TT cuối (T-1)      :milestone, case3a-payment, 28, 0d
-    Chi phí tính đến hủy    :active, case3a-cost, 32, 18d
-    Ngày hủy PLHD           :milestone, case3a-cancel, 50, 0d
-    Không hoạt động T+1     :case3a-inactive, 63, 30d
-    
-    section Case 3B - PLHD Hủy Đầu T+1
-    Hoạt động T-1           :done, case3b-prev, 1, 30d
-    Ngày TT cuối (T-1)      :milestone, case3b-payment, 22, 0d
-    Chi phí cả tháng T      :active, case3b-cost, 32, 30d
-    Ngày hủy (đầu T+1)      :milestone, case3b-cancel, 65, 0d
-    Không hoạt động sau hủy :case3b-inactive, 66, 27d
-    
-    section Case 4 - PLHD Hết Hạn Giữa T
-    Hoạt động T-1           :done, case4-prev, 1, 30d
-    Ngày TT cuối (T-1)      :milestone, case4-payment, 26, 0d
-    Chi phí đến hết hạn     :active, case4-cost, 32, 23d
-    Ngày hết hạn PLHD       :milestone, case4-expire, 55, 0d
-    Hết hạn, không T+1      :case4-inactive, 63, 30d
-    
-    section Case 5 - PLHD Bắt Đầu Giữa T
-    Chưa có hợp đồng T-1    :case5-no-contract, 1, 30d
-    Ngày ký PLHD mới        :milestone, case5-start, 40, 0d
-    Chi phí từ giữa T       :active, case5-cost, 40, 22d
-    Tiếp tục T+1            :case5-next, 63, 30d
-    
-    section Kết Quả Thu Thập
-    Vùng thu thập T         :crit, collection-zone, 32, 30d
-    Tổng chi phí tháng T    :milestone, total-cost, 47, 0d
+```
+Timeline 3 Tháng: T-1 ──────── T (Quan Tâm) ──────── T+1
+
+Tháng:    │    T-1    │      T      │    T+1    │
+Ngày:     1────────31│32─────────62│63────────93
+
+Case 1 - PLHD Bình Thường:
+          ████████████│██████████████│████████████
+          ─────── TT cuối (25)       │
+                      │◄─ Chi phí tính ─►│
+
+Case 2 - PLHD Quá Hạn:
+          ████████████│██████████████│████████████
+          ── TT cuối (F_Calc) (20)   │
+                      │◄─ Nợ quá hạn ─►│
+
+Case 3A - PLHD Hủy Giữa T:
+          ████████████│████████╫     │
+          ─────── TT cuối (28)       │
+                      │◄─ Đến hủy ─►│ (50)
+
+Case 3B - PLHD Hủy Đầu T+1:
+          ████████████│██████████████│╫
+          ─────── TT cuối (22)       │
+                      │◄─ Cả tháng T ─►│ Hủy (65)
+
+Case 4 - PLHD Hết Hạn Giữa T:
+          ████████████│███████████╫  │
+          ─────── TT cuối (26)       │
+                      │◄─ Đến hết hạn ─►│ (55)
+
+Case 5 - PLHD Bắt Đầu Giữa T:
+                      │    ████████████│████████████
+                      │    Ký mới (40) │
+                      │    ◄─ Từ giữa T ─►│
+
+═══════════════════════════════════════════════════════
+Vùng Thu Thập:        │◄═══════════════►│
+                      │   CHI PHÍ THÁNG T   │
+═══════════════════════════════════════════════════════
+
+Chú thích:
+████ = Hoạt động/Chi phí được tính
+╫    = Điểm hủy/hết hạn
+TT   = Thanh toán
 ```
 
 ## Giải Thích Timeline Chi Tiết (3 Tháng)
