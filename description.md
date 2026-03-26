@@ -1,238 +1,225 @@
-# Báo Cáo Thống Kê Chi Phí Trích Trước
+# Báo Cáo Thống Kê Công Nợ Tích Lũy
 
 ## Mô Tả Tổng Quan
 
-Báo cáo thống kê chi phí trích trước là tính năng cho phép kế toán xem chi phí dự kiến phải trả trong một tháng cụ thể. Hệ thống sẽ ưu tiên hiển thị số liệu thực tế đã ghi nhận trong bảng ChiPhiTMB, và chỉ tính toán lý thuyết từ PLHD_MatBang khi không có số liệu thực tế.
+Báo cáo thống kê công nợ tích lũy là tính năng cho phép kế toán xem **tổng số tiền nợ chưa thanh toán** tại **thời điểm cuối tháng** được chọn. Khác với cách hiểu cũ (tính chi phí phát sinh TRONG tháng), cách hiểu mới này **nhìn ngược về trước** từ cuối tháng để thống kê tổng công nợ tích lũy đến thời điểm đó.
+
+### Đặc Điểm Thanh Toán Thực Tế
+- **Chu kỳ thanh toán phổ biến:** Theo đợt 3 tháng (không phải hàng tháng)
+- **Ngày bắt đầu đợt:** Có thể là ngày bất kỳ trong tháng (không nhất thiết ngày 1)
+- **Ví dụ đợt bắt đầu ngày 15:**
+  - Đợt 1: 15/T1 → 14/T4 (3 tháng)
+  - Đợt 2: 15/T4 → 14/T7 (3 tháng)
+  - Đợt 3: 15/T7 → 14/T10 (3 tháng)
+  - Đợt 4: 15/T10 → 14/T1+1 (3 tháng)
+- **Tính nợ:** Nếu đợt 3 tháng chưa thanh toán → nợ cả đợt đó
+- **Thời điểm báo cáo:** Cuối tháng bất kỳ, xem tổng nợ tích lũy đến thời điểm đó
+
+## Sự Khác Biệt Cơ Bản
+
+### Cách Hiểu Cũ (Period of Time)
+- Tháng chọn = **Khung thời gian**
+- Tính chi phí **phát sinh TRONG** tháng T
+- Logic: "Tháng này tôi phải trả bao nhiêu?"
+
+### Cách Hiểu Mới (Point of Time) - ĐÃ CHỌN
+- Tháng chọn = **Thời điểm cuối tháng**
+- Tính tổng nợ **tích lũy ĐẾN** cuối tháng T
+- Logic: "Đến cuối tháng này, tôi còn nợ tổng cộng bao nhiêu?"
 
 ## Yêu Cầu Chính
 
-Dựa trên phân tích từ chat history và yêu cầu nghiệp vụ:
+### 1. Thống Kê Công Nợ Tích Lũy Theo Đợt
+- Tính tổng số tiền chưa thanh toán của tất cả phụ lục hợp đồng đến cuối tháng được chọn
+- **Đặc biệt:** Thanh toán theo đợt 3 tháng, nên nợ thường tích lũy theo từng đợt
+- Bao gồm cả nợ cũ từ các đợt trước và nợ phát sinh trong đợt hiện tại
+- Không phân biệt nợ phát sinh khi nào, chỉ quan tâm tổng nợ tại thời điểm cuối tháng
 
-### 1. Chi Phí Từ PLHD Còn Thời Hạn
-- Các PLHD_MatBang còn thời hạn, chưa hủy, chạy đến tháng quan tâm
-- Chỉ tính phần chạy ngang tháng quan tâm được chọn
-- Tính từ ngày thanh toán cuối cùng đến tháng muốn trích
+### 2. Logic Ưu Tiên Dữ Liệu
+- **Ưu tiên 1:** Kiểm tra dữ liệu lịch sử thanh toán đã ghi nhận
+- **Ưu tiên 2:** Tính toán lý thuyết từ phụ lục hợp đồng nếu không có dữ liệu lịch sử thanh toán
 
-### 2. Chi Phí Từ PLHD Quá Hạn  
-- Các hợp đồng quá hạn chưa thanh toán (chưa chuyển và đã chuyển nhưng chưa duyệt)
-- Sử dụng function F_CalculateNgayThanhToanKyMoi để tính toán
-
-### 3. Logic Ưu Tiên Dữ Liệu
-- **Ưu tiên 1:** Kiểm tra số liệu thực tế trong ChiPhiTMB
-- **Ưu tiên 2:** Tính toán lý thuyết từ PLHD_MatBang nếu không có số liệu thực tế
-
-### 4. Công Thức Tính Toán
-- Lấy giá cả tháng chia cho số ngày thực tế tháng đó
-- Nhân với số ngày còn thời hạn thực tế
-- Ngày hủy PLHĐ ưu tiên cao hơn thời hạn
+### 3. Công Thức Tính Toán Theo Đợt 3 Tháng
+- Tính tổng số tiền từ đợt thanh toán cuối cùng đến cuối tháng được chọn
+- Cộng dồn tất cả các đợt chưa thanh toán đến thời điểm cuối tháng
+- **Ví dụ:** Nếu đợt T4-T6 chưa thanh toán và đang ở cuối T5 → nợ = tiền thuê 3 tháng (T4+T5+T6)
 
 ## Đồ Thị Logic Flow
 
 ```mermaid
 graph TD
-    A[Tháng Quan Tâm Được Chọn] --> B{Kiểm tra ChiPhiTMB}
+    A[Chọn Tháng T - Thời Điểm Cuối Tháng] --> B{Kiểm tra dữ liệu lịch sử thanh toán}
     
-    B -->|Có số liệu thực tế| C[Hiển thị số liệu thực tế từ ChiPhiTMB]
-    B -->|Không có số liệu| D[Tính toán từ PLHD_MatBang]
+    B -->|Có dữ liệu lịch sử thanh toán| C[Lấy dữ liệu lịch sử thanh toán]
+    B -->|Không có dữ liệu| D[Tính toán từ phụ lục hợp đồng]
     
-    D --> E{Trạng thái PLHD}
+    D --> E[Xác định tất cả phụ lục hợp đồng còn hoạt động đến cuối tháng T]
     
-    E -->|Còn thời hạn, chưa hủy| F[Case 1: PLHD Hoạt động bình thường]
-    E -->|Quá hạn, chưa thanh toán| G[Case 2: PLHD Quá hạn]
-    E -->|Có ngày hủy| H[Case 3: PLHD Bị hủy]
-    E -->|Hết hạn trong tháng| I[Case 4: PLHD Hết hạn giữa tháng]
+    E --> F[Tính tổng nợ tích lũy cho từng phụ lục hợp đồng]
     
-    F --> F1[Tính chi phí cho cả tháng<br/>Từ ngày thanh toán cuối → cuối tháng]
+    F --> G{Trạng thái phụ lục hợp đồng tại cuối tháng T}
     
-    G --> G1[Tính chi phí nợ quá hạn<br/>Sử dụng F_CalculateNgayThanhToanKyMoi]
+    G -->|Còn hoạt động| H[Tính nợ từ lần thanh toán cuối đến cuối tháng T]
+    G -->|Đã hết hạn| I[Tính nợ từ lần thanh toán cuối đến ngày hết hạn]
+    G -->|Đã hủy| J[Tính nợ từ lần thanh toán cuối đến ngày hủy]
+    G -->|Quá hạn| K[Tính toàn bộ nợ quá hạn]
     
-    H --> H1{So sánh ngày hủy vs thời hạn}
-    H1 -->|Ngày hủy < Thời hạn| H2[Ưu tiên ngày hủy<br/>Tính từ ngày thanh toán cuối → ngày hủy]
-    H1 -->|Ngày hủy >= Thời hạn| H3[Tính đến thời hạn<br/>Bỏ qua ngày hủy]
-    
-    I --> I1[Tính theo thời gian thực tế<br/>Từ đầu tháng → ngày hết hạn]
-    
-    F1 --> J[Áp dụng công thức tỷ lệ ngày]
-    G1 --> J
-    H2 --> J
-    H3 --> J
-    I1 --> J
-    
-    J --> K[Công thức: Giá tháng / Số ngày tháng × Số ngày thực tế]
-    
-    C --> L[Kết hợp số liệu thực tế + lý thuyết]
+    H --> L[Cộng dồn tất cả công nợ]
+    I --> L
+    J --> L
     K --> L
     
-    L --> M[Báo cáo cuối cùng với phân biệt rõ ràng<br/>- Số liệu thực tế ChiPhiTMB<br/>- Số liệu lý thuyết PLHD_MatBang]
+    C --> M[Kết hợp dữ liệu lịch sử thanh toán + lý thuyết]
+    L --> M
+    
+    M --> N[Báo cáo tổng công nợ tại cuối tháng T<br/>- Phân loại theo trạng thái phụ lục hợp đồng<br/>- Hiển thị tổng nợ tích lũy]
 
     style A fill:#e1f5fe
     style C fill:#c8e6c9
-    style K fill:#fff3e0
-    style M fill:#f3e5f5
+    style L fill:#fff3e0
+    style N fill:#f3e5f5
 ```
 
-## Biểu Đồ Timeline - Các Trường Hợp PLHD_MatBang
+## Các Trường Hợp Chi Tiết
 
-```
-Timeline 3 Tháng: T-1 ──────── T (Quan Tâm) ──────── T+1
+### Trường Hợp 1: Phụ Lục Hợp Đồng Hoạt Động Bình Thường
 
-Tháng:    │    T-1    │      T      │    T+1    │
-Ngày:     1────────31│32─────────62│63────────93
-
-Case 1 - PLHD Bình Thường:
-          ████████████│██████████████│████████████
-          ─────── TT cuối (25)       │
-                      │◄─ Chi phí tính ─►│
-
-Case 2 - PLHD Quá Hạn:
-          ████████████│██████████████│████████████
-          ── TT cuối (F_Calc) (20)   │
-                      │◄─ Nợ quá hạn ─►│
-
-Case 3A - PLHD Hủy Giữa T:
-          ████████████│████████╫     │
-          ─────── TT cuối (28)       │
-                      │◄─ Đến hủy ─►│ (50)
-
-Case 3B - PLHD Hủy Đầu T+1:
-          ████████████│██████████████│╫
-          ─────── TT cuối (22)       │
-                      │◄─ Cả tháng T ─►│ Hủy (65)
-
-Case 4 - PLHD Hết Hạn Giữa T:
-          ████████████│███████████╫  │
-          ─────── TT cuối (26)       │
-                      │◄─ Đến hết hạn ─►│ (55)
-
-Case 5 - PLHD Bắt Đầu Giữa T:
-                      │    ████████████│████████████
-                      │    Ký mới (40) │
-                      │    ◄─ Từ giữa T ─►│
-
-═══════════════════════════════════════════════════════
-Vùng Thu Thập:        │◄═══════════════►│
-                      │   CHI PHÍ THÁNG T   │
-═══════════════════════════════════════════════════════
-
-Chú thích:
-████ = Hoạt động/Chi phí được tính
-╫    = Điểm hủy/hết hạn
-TT   = Thanh toán
+```mermaid
+timeline
+    title Trường hợp 1 - Phụ lục hợp đồng hoạt động, có nợ tích lũy theo đợt 3 tháng
+    
+    section Đợt 1 (15/T1-14/T4)
+        Đã thanh toán : Đợt đã thanh toán đầy đủ
+    
+    section Đợt 2 (15/T4-14/T7)
+        Đã thanh toán : Đợt đã thanh toán đầy đủ
+    
+    section Đợt 3 (15/T7-14/T10)
+        Chưa thanh toán : Đợt chưa thanh toán
+        Cuối T8 : TỔNG NỢ = Tiền thuê 3 tháng (15/T7-14/T10)
+    
+    section Đợt 4 (15/T10-14/T1+1)
+        Chưa đến hạn : Đợt chưa bắt đầu
 ```
 
-## Giải Thích Timeline Chi Tiết (3 Tháng)
+**Điều kiện:**
+- Phụ lục hợp đồng còn hoạt động đến cuối tháng T (ví dụ T8)
+- Có đợt thanh toán 3 tháng chưa thực hiện (15/T7-14/T10)
+- Phụ lục hợp đồng chưa hết hạn
 
-### Khung Thời Gian Tổng Quan
-- **Tháng T-1:** Ngày 1-31 (context trước đó)
-- **Tháng T (Quan Tâm):** Ngày 32-62 (vùng tính chi phí)
-- **Tháng T+1:** Ngày 63-93 (context sau đó)
-- **Ranh giới:** Ngày 31/32 và 62/63 đánh dấu chuyển tháng
+**Tính toán:**
+- Tổng nợ = Tất cả các đợt 3 tháng chưa thanh toán đến cuối tháng T
+- **Ví dụ cụ thể:** Đang ở cuối T8, đợt 15/T7-14/T10 chưa thanh toán → Nợ = Tiền thuê × 3 tháng
 
-### Case 1: PLHD Hoạt động bình thường
-- **T-1:** `Hoạt động bình thường ──── Ngày TT cuối (25)`
-- **T:** `Chi phí được tính (32-62) ████████████████████████████████`
-- **T+1:** `Tiếp tục hoạt động ────────────────────────────────`
-- **Chi phí tính:** Toàn bộ tháng T từ ngày thanh toán cuối T-1
-- **Công thức:** `Giá_tháng × (30/31)` ngày
+---
 
-### Case 2: PLHD Quá hạn
-- **T-1:** `Quá hạn từ trước ──── Ngày TT cuối (F_Calc) (20)`
-- **T:** `Chi phí nợ quá hạn (32-62) ████████████████████████████████` (đỏ)
-- **T+1:** `Vẫn nợ tiếp ────────────────────────────────` (đỏ)
-- **Đặc biệt:** Sử dụng `F_CalculateNgayThanhToanKyMoi` để xác định điểm bắt đầu
-- **Ưu tiên cao:** Cần xử lý trước các PLHD bình thường
+### Trường Hợp 2: Phụ Lục Hợp Đồng Hết Hạn Trong Tháng T
 
-### Case 3A: PLHD Hủy giữa tháng T
-- **T-1:** `Hoạt động bình thường ──── Ngày TT cuối (28)`
-- **T:** `Chi phí đến hủy (32-50) ██████████████████ ╫ Ngày hủy (50)`
-- **T+1:** `Không hoạt động ────────────────────────────────` (xám)
-- **Chi phí tính:** Chỉ từ đầu tháng T đến ngày hủy
-- **Công thức:** `Giá_tháng × (18/31)` ngày
-
-### Case 3B: PLHD Hủy đầu tháng T+1
-- **T-1:** `Hoạt động bình thường ──── Ngày TT cuối (22)`
-- **T:** `Chi phí cả tháng T (32-62) ████████████████████████████████`
-- **T+1:** `Hủy (65) ╫ Không hoạt động ──────────────────────`
-- **Chi phí tính:** Toàn bộ tháng T vì hủy sau tháng quan tâm
-- **Công thức:** `Giá_tháng × (30/31)` ngày
-
-### Case 4: PLHD Hết hạn giữa tháng T
-- **T-1:** `Hoạt động bình thường ──── Ngày TT cuối (26)`
-- **T:** `Chi phí đến hết hạn (32-55) ███████████████████████ ╫ Hết hạn (55)`
-- **T+1:** `Hết hạn, không hoạt động ────────────────────────────────` (xám)
-- **Chi phí tính:** Từ đầu tháng T đến ngày hết hạn thực tế
-- **Công thức:** `Giá_tháng × (23/31)` ngày
-
-### Case 5: PLHD Bắt đầu giữa tháng T (Mới thêm)
-- **T-1:** `Chưa có hợp đồng ────────────────────────────────` (xám)
-- **T:** `Ký mới (40) ── Chi phí từ giữa T (40-62) ██████████████████`
-- **T+1:** `Tiếp tục hoạt động ────────────────────────────────`
-- **Chi phí tính:** Từ ngày ký hợp đồng đến hết tháng T
-- **Công thức:** `Giá_tháng × (22/31)` ngày
-
-### Vùng Thu Thập Chi Phí Tháng T
-- **Phạm vi:** Ngày 32-62 (tháng T quan tâm)
-- **Màu đỏ (Critical):** Các đoạn chi phí quá hạn, ưu tiên cao
-- **Màu xanh (Active):** Các đoạn chi phí bình thường
-- **Kết quả:** Tổng hợp tất cả đoạn chi phí màu đỏ + xanh trong vùng tháng T
-
-### Lợi Ích Timeline 3 Tháng
-1. **Context rõ ràng:** Thấy được PLHD hoạt động như thế nào trước và sau tháng T
-2. **Điểm chuyển tiếp:** Hiểu rõ các milestone quan trọng (ngày thanh toán cuối, ngày hủy, hết hạn)
-3. **Tính liên tục:** Thấy được tính liên tục của các PLHD qua các tháng
-4. **Validation logic:** Dễ dàng kiểm tra logic tính toán có hợp lý không
-
-### Kết Quả Tổng Hợp
-Tất cả các đoạn chi phí từ các case trên sẽ được cộng lại để tạo thành tổng chi phí trích trước cho tháng T.
-
-## Chi Tiết Các Trường Hợp
-
-### Case 1: PLHD Hoạt động bình thường
-- **Điều kiện:** Còn thời hạn, chưa hủy, chạy xuyên suốt tháng quan tâm
-- **Tính toán:** Chi phí cho cả tháng từ ngày thanh toán cuối cùng đến cuối tháng
-- **Công thức:** `Giá_tháng × 1` (toàn bộ tháng)
-
-### Case 2: PLHD Quá hạn  
-- **Điều kiện:** Đã quá thời hạn nhưng chưa thanh toán
-- **Tính toán:** Sử dụng `F_CalculateNgayThanhToanKyMoi` để xác định kỳ thanh toán
-- **Bao gồm:** Hợp đồng chưa chuyển + đã chuyển nhưng chưa duyệt
-
-### Case 3: PLHD Bị hủy
-- **Điều kiện:** Có ngày hủy trong hoặc trước tháng quan tâm  
-- **Logic ưu tiên:** Ngày hủy > Thời hạn hợp đồng
-- **Tính toán:** Từ ngày thanh toán cuối cùng đến ngày hủy
-- **Công thức:** `Giá_tháng / Số_ngày_tháng × Số_ngày_từ_thanh_toán_đến_hủy`
-
-### Case 4: PLHD Hết hạn giữa tháng
-- **Điều kiện:** Thời hạn hợp đồng kết thúc trong tháng quan tâm
-- **Tính toán:** Theo thời gian thực tế từ đầu tháng đến ngày hết hạn
-- **Công thức:** `Giá_tháng / Số_ngày_tháng × Số_ngày_từ_đầu_tháng_đến_hết_hạn`
-
-## Công Nghệ Sử Dụng
-
-### Database Functions
-- **F_CalculateNgayThanhToanKyMoi:** Tính toán ngày cuối của một đợt thanh toán tính từ ngày bắt đầu
-- **sp_GetHD_ThanhToan_DaCoChungTu_RBAC:** Stored procedure tham khảo cho logic nghiệp vụ
-
-### Tables Chính
-- **PLHD_MatBang:** Chứa thông tin phụ lục hợp đồng mặt bằng
-- **ChiPhiTMB:** Bảng chi phí thuê mặt bằng (số liệu thực tế đã ghi nhận)
-
-### Logic Tích Hợp
-```sql
--- Sử dụng CROSS APPLY với function
-CROSS APPLY dbo.F_CalculateNgayThanhToanKyMoi(
-    a.ngaythanhtoan_plhd, 
-    d.SoHD_PLHD, 
-    d.DenNgay
-) f
+```mermaid
+timeline
+    title Trường hợp 2 - Phụ lục hợp đồng hết hạn trong tháng T
+    
+    section Đợt 1 (15/T1-14/T4)
+        Đã thanh toán : Đợt đã thanh toán đầy đủ
+    
+    section Đợt 2 (15/T4-14/T7)
+        Đã thanh toán : Đợt đã thanh toán đầy đủ
+    
+    section Đợt 3 (15/T7-14/T10)
+        Chưa thanh toán : Đợt chưa thanh toán
+        Ngày 18/T8 : HẾT HẠN (giữa đợt)
+        Cuối T8 : TỔNG NỢ = Tiền thuê từ 15/T7 đến 18/T8
+    
+    section Đợt 4 (15/T10-14/T1+1)
+        Không áp dụng : Phụ lục hợp đồng đã hết hạn
 ```
 
-## Kết Quả Mong Đợi
+**Điều kiện:**
+- Phụ lục hợp đồng hết hạn trong tháng T (ví dụ 18/T8)
+- Hết hạn có thể rơi vào giữa một đợt 3 tháng
 
-Báo cáo sẽ cung cấp:
-1. **Danh sách chi tiết** các PLHD với chi phí dự kiến
-2. **Phân loại rõ ràng** giữa số liệu thực tế và lý thuyết  
-3. **Tổng hợp chi phí** theo từng loại hợp đồng
-4. **Ghi chú** về phương pháp tính toán cho từng dòng
-5. **Linh hoạt thời gian** - có thể xem mọi tháng (quá khứ, hiện tại, tương lai)
+**Tính toán:**
+- Tổng nợ = Nợ tích lũy đến ngày hết hạn, tính theo tỷ lệ trong đợt 3 tháng
+- **Ví dụ cụ thể:** Đợt 15/T7-14/T10 chưa thanh toán, hết hạn 18/T8 → Nợ = Tiền thuê × (thời gian từ 15/T7 đến 18/T8) / 3 tháng
+
+---
+
+### Trường Hợp 3: Phụ Lục Hợp Đồng Bị Hủy Trong Tháng T
+
+```mermaid
+timeline
+    title Trường hợp 3 - Phụ lục hợp đồng bị hủy trong tháng T
+    
+    section Đợt 1 (15/T1-14/T4)
+        Đã thanh toán : Đợt đã thanh toán đầy đủ
+    
+    section Đợt 2 (15/T4-14/T7)
+        Đã thanh toán : Đợt đã thanh toán đầy đủ
+    
+    section Đợt 3 (15/T7-14/T10)
+        Chưa thanh toán : Đợt chưa thanh toán
+        Ngày 15/T8 : BỊ HỦY (giữa đợt)
+        Cuối T8 : TỔNG NỢ = Tiền thuê từ 15/T7 đến 15/T8
+    
+    section Đợt 4 (15/T10-14/T1+1)
+        Không áp dụng : Phụ lục hợp đồng đã hủy
+```
+
+**Điều kiện:**
+- Phụ lục hợp đồng bị hủy trong tháng T (ví dụ 15/T8)
+- Hủy có thể rơi vào giữa một đợt 3 tháng
+
+**Tính toán:**
+- Tổng nợ = Nợ tích lũy đến ngày hủy, tính theo tỷ lệ trong đợt 3 tháng
+- **Ví dụ cụ thể:** Đợt 15/T7-14/T10 chưa thanh toán, hủy 15/T8 → Nợ = Tiền thuê × (thời gian từ 15/T7 đến 15/T8) / 3 tháng
+
+---
+
+### Trường Hợp 4: Phụ Lục Hợp Đồng Quá Hạn
+
+```mermaid
+timeline
+    title Trường hợp 4 - Phụ lục hợp đồng quá hạn chưa thanh toán
+    
+    section Đợt 1 (15/T1-14/T4)
+        Đã thanh toán : Đợt đã thanh toán đầy đủ
+    
+    section Đợt 2 (15/T4-14/T7)
+        Chưa thanh toán : Đợt chưa thanh toán (QUÁ HẠN)
+    
+    section Đợt 3 (15/T7-14/T10)
+        Chưa thanh toán : Đợt chưa thanh toán (QUÁ HẠN)
+        Cuối T8 : TỔNG NỢ = 2 đợt × 3 tháng = 6 tháng tiền thuê
+    
+    section Đợt 4 (15/T10-14/T1+1)
+        Chưa đến hạn : Đợt chưa bắt đầu
+```
+
+**Điều kiện:**
+- Phụ lục hợp đồng đã quá thời hạn thanh toán nhiều đợt
+- Chưa thanh toán (chưa chuyển hoặc đã chuyển nhưng chưa duyệt)
+
+**Tính toán:**
+- Tổng nợ = Toàn bộ các đợt 3 tháng chưa thanh toán
+- Ưu tiên cao trong báo cáo (hiển thị nổi bật)
+- **Ví dụ cụ thể:** 2 đợt quá hạn (15/T4-14/T7, 15/T7-14/T10) → Nợ = Tiền thuê × 6 tháng
+
+## Ví Dụ Thực Tế Chu Kỳ Thanh Toán
+
+**Trường hợp 1: Phụ lục hợp đồng bắt đầu ngày 1 (truyền thống):**
+- **Đợt 1:** 01/T1 → 31/T3 (Quý 1) - Thanh toán vào cuối T3
+- **Đợt 2:** 01/T4 → 30/T6 (Quý 2) - Thanh toán vào cuối T6  
+- **Đợt 3:** 01/T7 → 30/T9 (Quý 3) - Thanh toán vào cuối T9
+- **Đợt 4:** 01/T10 → 31/T12 (Quý 4) - Thanh toán vào cuối T12
+
+**Trường hợp 2: Phụ lục hợp đồng bắt đầu ngày 15 (thực tế phổ biến):**
+- **Đợt 1:** 15/T1 → 14/T4 (3 tháng) - Thanh toán vào 14/T4
+- **Đợt 2:** 15/T4 → 14/T7 (3 tháng) - Thanh toán vào 14/T7
+- **Đợt 3:** 15/T7 → 14/T10 (3 tháng) - Thanh toán vào 14/T10
+- **Đợt 4:** 15/T10 → 14/T1+1 (3 tháng) - Thanh toán vào 14/T1+1
+
+**Tình huống báo cáo tại cuối T8 (trường hợp 2):**
+- Đợt 1 (15/T1-14/T4): ✅ Đã thanh toán
+- Đợt 2 (15/T4-14/T7): ✅ Đã thanh toán  
+- Đợt 3 (15/T7-14/T10): ❌ Chưa thanh toán → **NỢ = Tiền thuê 3 tháng**
+- Đợt 4 (15/T10-14/T1+1): ⏳ Chưa đến hạn
